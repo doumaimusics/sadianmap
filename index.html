@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <script src="jquery.js"></script>
+    <style type="text/css">
+      body, html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        font-family: "微软雅黑";
+      }
+
+      #allmap {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      #result {
+        width: 22.2%;
+        font-size: 12px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        border: 1px solid #000;
+      }
+
+      dl,dt,dd,ul,li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      p {
+        font-size: 12px;
+      }
+
+      dt {
+        font-size: 14px;
+        font-family: "微软雅黑";
+        font-weight: bold;
+        border-bottom: 1px dotted #000;
+        padding: 5px 0 5px 5px;
+        margin: 5px 0;
+      }
+
+      dd {
+        padding: 5px 0 0 5px;
+      }
+
+      li {
+        line-height: 28px;
+        /*  float:left; */
+      }
+
+      .tu {
+        width: 77.6%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+
+      #result .he {
+        position: absolute;
+        left: 50px;
+        top: 15px;
+      }
+.places{
+      width: 200px;
+      height: 40px;
+     /*  border:2px solid red;  */
+      position: absolute;
+      right: 100px;
+      bottom: 0px;
+      z-index: 9999;
+}
+.places button{
+  width: 80px;
+  height: 30px;
+
+}
+
+
+
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=G3GKeZsowwfaOlY71VAd0TfR"></script>
+    <!--加载鼠标绘制工具-->
+    <script type="text/javascript" src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.css"/>
+    <!--加载检索信息窗口-->
+    <script type="text/javascript" src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js"></script>
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.css"/>
+    <title>百度地图</title>
+  </head>
+  <body>
+    <div id="result">
+      <!--  <input type="button" value="获取绘制的覆盖物个数" onclick="alert(overlays.length)"/>
+   <input type="button" value="清除所有覆盖物" onclick="clearAll()"/>
+    -->
+      <div class="he">
+        <form action="" method="">
+          <ul style="margin-bottom:10px">坐标串（用空格隔开）：</ul>  
+
+          <input type="button" id="clear_keleyi_com" value="清空文本框" /> 
+
+          <input type="button" onclick="remove_overlay();" value="还原地图" />
+
+          <textarea id="longitude" type="text" cols="20" rows="20" id="con" name="con" style="margin-top:10px;"/></textarea>
+          <!--文本区域-->
+        </form>
+        <br>
+        <input type="button" value="绘制点" onclick="theLocation()" style="width:130px;height:38px"/>
+         <br>
+        <br>       
+        <input type="button" value="绘制线" onclick="coordinates()" style="width:130px;height:38px"/>
+        <br>
+        <br>
+         <input type="button" value="绘制面" onclick="fack()" style="width:130px;height:38px"/>
+        <br>
+        <br>
+        <button onclick="designs()" style="width:130px;height:38px">画图</button>
+        <br>
+        <br>
+        
+        <!-- <button class="baidu">百度地图</button>
+      <button class="gaode">高德地图</button> -->
+      </div>
+    </div>
+      <div class="places">
+
+        <a href="bai.html"><button class="baidu">百度地图</button></a>
+        <a href="gao.html"><button class="gaode">高德地图</button></a>
+
+    </div>
+    <div class="tu">
+      <!-- 设置地图的一个盒子 -->
+      <div id="allmap" style="overflow:hidden;zoom:1;position:relative;">
+        <div id="map" style="height:100%;-webkit-transition: all 0.5s ease-in-out;transition: all 0.5s ease-in-out;"></div>
+      </div>
+      <div class="point-list">
+        <ul></ul>
+      </div>
+      <!-- **********高德地图************ -->
+      <!-- <div id="container" style="display:none;"></div> -->
+    </div>
+    <script type="text/javascript">
+      
+  // 百度地图API功能
+    var map = new BMap.Map('map');
+    var poi = new BMap.Point(116.4123, 39.9037);
+    map.centerAndZoom(poi, 10);
+
+    map.addEventListener("click", function(e){    
+ alert(e.point.lng + ", " + e.point.lat);    
+});
+    map.enableScrollWheelZoom();  
+    var overlays = [];
+  var overlaycomplete = function(e){
+        overlays.push(e.overlay);
+    };
+    var styleOptions = {
+        strokeColor:"red",    //边线颜色。
+        fillColor:"red",      //填充颜色。当参数为空时，圆形将没有填充效果。
+        strokeWeight: 3,       //边线的宽度，以像素为单位。
+        strokeOpacity: 0.8,    //边线透明度，取值范围0 - 1。
+        fillOpacity: 0.7,      //填充的透明度，取值范围0 - 1。
+        strokeStyle: 'solid' //边线的样式，solid或dashed。
+    }
+    //实例化鼠标绘制工具
+    var drawingManager = new BMapLib.DrawingManager(map, {
+        isOpen: false, //是否开启绘制模式
+        enableDrawingTool: false, //是否显示工具栏
+        drawingToolOptions: {
+            anchor: BMAP_ANCHOR_TOP_RIGHT, //位置
+            offset: new BMap.Size(5, 5), //偏离值
+            scale: 0.8 //工具栏缩放比例
+        },
+        circleOptions: styleOptions, //圆的样式
+        polylineOptions: styleOptions, //线的样式
+        polygonOptions: styleOptions, //多边形的样式
+        rectangleOptions: styleOptions //矩形的样式
+    });  
+   //添加鼠标绘制工具监听事件，用于获取绘制结果
+    drawingManager.addEventListener('overlaycomplete', overlaycomplete);
+    function clearAll() {
+    for(var i = 0; i < overlays.length; i++){
+            map.removeOverlay(overlays[i]);
+        }
+        overlays.length = 0   
+    }
+
+
+var count = 0;
+var timer ;
+  map.addEventListener("click",function(e){
+     count ++;
+ timer = window.setTimeout(function(){
+      if(count==1){
+       // $('.point-list ul').append('<li>{lat:"'+e.point.lng + '",lng:"' + e.point.lat+'"},</li>') 
+       $('.point-list ul').append('<li>'+e.point.lng + '|' + e.point.lat+'</li>')   
+      }
+
+      window.clearTimeout(timer);
+      count=0;   
+   },300)   
+       
+  });
+/*控件放大缩小*/
+  var opts = {type: BMAP_NAVIGATION_CONTROL_LARGE}    
+map.addControl(new BMap.NavigationControl(opts));
+
+
+
+// 点
+ 
+function theLocation(){
+ 
+  var along = 0;
+  var alat = 0;
+      var pos = document.getElementById("longitude").value;
+      var arr = pos;
+      var points = new Array();
+
+     var url = arr;
+       //  strs = url.split(" ");
+
+      strs  = url .split(/\s+/);
+     var a = 0;
+
+     for(var i=0; i <strs.length;i++){
+
+    if( i <strs.length-1){
+
+   /*  map.addOverlay(new BMap.Marker(new BMap.Point(strs[a],strs[a+1])));*/
+      var poi = new BMap.Point(strs[a],strs[a+1]);
+
+            
+         points.push(poi);
+        /* console.log(poi);*/
+     
+         a+=2;
+         if (a>=strs.length) {
+          a = 0;
+          break;
+         };
+
+        
+      }
+
+
+}
+
+    for(var i = 0;i<points.length;i++){
+
+        var c=new Convertor();
+        var r1=c.WGS2BD09({lng:points[i].lng,lat:points[i].lat});
+
+       var bb=new BMap.Point(r1.lng,r1.lat);
+
+       // console.log(bb);
+
+
+    map.addOverlay(new BMap.Marker(bb));
+
+
+   
+    
+
+} 
+
+   map.panTo(poi);/*****移动地图到中心的代码******/
+
+ map.panTo(points);/*****移动地图到中心的代码******/
+    
+ }
+
+
+
+
+
+// 折线
+    function coordinates(){
+   
+        var pos = document.getElementById("longitude").value;
+
+        var arr=[]
+
+        var arr = pos;
+
+       var points = new Array();
+
+       var url = arr;
+
+           strs = url.split(/\s+/);
+
+       var a = 0;
+
+       for(var i=0; i <strs.length; i++){
+
+          if( i <strs.length-1){
+            
+
+       console.log(strs[a],strs[a+1]);
+
+        var poi = new BMap.Point(strs[a],strs[a+1]);
+         
+           points.push(poi);
+
+           a+=2;
+           /*console.log(poi)*/
+         if (a>=strs.length) {
+          a = 0;
+          break;
+         };
+
+
+
+}
+}
+
+
+
+
+
+
+var converted  = new Array();
+
+for(var i=0;i<points.length;i++){  
+
+var c=new Convertor();
+
+
+ var r1=c.WGS2BD09({lng:points[i].lng,lat:points[i].lat});
+ // console.log(r1)
+
+ 
+  var objKeys=Object.keys(r1);
+
+    objKeys = objKeys.sort();//这里写所需要的规则
+
+  
+
+var abs = new BMap.Point(r1[objKeys[1]],r1[objKeys[0]]);
+
+
+
+converted.push(abs);
+
+}
+
+  console.log(converted);
+
+
+ var polyline = new BMap.Polyline(converted,{strokeColor:"blue", strokeWeight:5, strokeOpacity:0.5});
+
+map.addOverlay(polyline);
+  
+map.panTo(poi);
+  
+
+
+
+
+}
+
+    
+ function Convertor(ak) {
+    this.stepCount = 100;
+    this.pointCount = [];
+    this.Result = [];
+    this.NoisIndex = [];
+    this.Time = new Date();
+    this.AK = ak;
+    this.M_PI = 3.14159265358979324;
+    this.A = 6378245.0;
+    this.EE = 0.00669342162296594323;
+    this.X_PI = this.M_PI * 3000.0 / 180.0;
+}
+Convertor.prototype.outofChine = function(p) {
+    if (p.lng < 72.004 || p.lng > 137.8347) {
+        return true;
+    }
+    if (p.lat < 0.8293 || p.lat > 55.8271) {
+        return true;
+    }
+    return false;
+}
+
+Convertor.prototype.WGS2GCJ_lat = function(x, y) {
+    var ret1 = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret1 += (20.0 * Math.sin(6.0 * x * this.M_PI) + 20.0 * Math.sin(2.0 * x * this.M_PI)) * 2.0 / 3.0;
+    ret1 += (20.0 * Math.sin(y * this.M_PI) + 40.0 * Math.sin(y / 3.0 * this.M_PI)) * 2.0 / 3.0;
+    ret1 += (160.0 * Math.sin(y / 12.0 * this.M_PI) + 320 * Math.sin(y * this.M_PI / 30.0)) * 2.0 / 3.0;
+    return ret1;
+}
+
+Convertor.prototype.WGS2GCJ_lng = function(x, y) {
+    var ret2 = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret2 += (20.0 * Math.sin(6.0 * x * this.M_PI) + 20.0 * Math.sin(2.0 * x * this.M_PI)) * 2.0 / 3.0;
+    ret2 += (20.0 * Math.sin(x * this.M_PI) + 40.0 * Math.sin(x / 3.0 * this.M_PI)) * 2.0 / 3.0;
+    ret2 += (150.0 * Math.sin(x / 12.0 * this.M_PI) + 300.0 * Math.sin(x / 30.0 * this.M_PI)) * 2.0 / 3.0;
+    return ret2;
+}
+
+Convertor.prototype.WGS2GCJ = function(poi) {
+    if (this.outofChine(poi)) {
+        return;
+    }
+    var poi2 = {};
+    var dLat = this.WGS2GCJ_lat(poi.lng - 105.0, poi.lat - 35.0);
+    var dLon = this.WGS2GCJ_lng(poi.lng - 105.0, poi.lat - 35.0);
+    var radLat = poi.lat / 180.0 * this.M_PI;
+    var magic = Math.sin(radLat);
+    magic = 1 - this.EE * magic * magic;
+    var sqrtMagic = Math.sqrt(magic);
+    dLat = (dLat * 180.0) / ((this.A * (1 - this.EE)) / (magic * sqrtMagic) * this.M_PI);
+    dLon = (dLon * 180.0) / (this.A / sqrtMagic * Math.cos(radLat) * this.M_PI);
+    poi2.lat = poi.lat + dLat;
+    poi2.lng = poi.lng + dLon;
+    return poi2;
+}
+
+Convertor.prototype.GCJ2BD09 = function(poi) {
+    var poi2 = {};
+    var x = poi.lng
+      , y = poi.lat;
+    var z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * this.X_PI);
+    var theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * this.X_PI);
+    poi2.lng = z * Math.cos(theta) + 0.0065;
+    poi2.lat = z * Math.sin(theta) + 0.006;
+    return poi2;
+}
+
+/**
+* WGS->百度坐标系
+*/
+Convertor.prototype.WGS2BD09 = function(poi) {
+    //WGS->GCJ
+    var poi2 = this.WGS2GCJ(poi);
+    if (typeof poi2 === "undefined") {
+        return;
+    }
+    //GCJ->百度坐标系
+    return this.GCJ2BD09(poi2);
+}
+
+
+
+
+
+
+
+ // 面模式
+function fack(){
+   
+        var pos = document.getElementById("longitude").value;
+
+        var arr=[]
+
+        var arr = pos;
+
+        var points = new Array();
+        var url = arr;
+           strs = url .split(/\s+/);
+
+        var a = 0;
+
+       for(var i=0; i <strs.length; i++){
+
+          if( i <strs.length-1){
+            
+
+       console.log(strs[a],strs[a+1]);
+
+        var poi = new BMap.Point(strs[a],strs[a+1]);
+
+        // var ggPoint = new BMap.Point(strs[a],strs[a+1]);
+
+           points.push(poi);
+
+           a+=2;
+
+         if (a>=strs.length) {
+          a = 0;
+          break;
+         };
+
+
+}
+}
+
+
+var converted  = new Array();
+
+for(var i=0;i<points.length;i++){  
+
+var c=new Convertor();
+
+
+ var r1=c.WGS2BD09({lng:points[i].lng,lat:points[i].lat});
+ // console.log(r1)
+
+ 
+  var objKeys=Object.keys(r1);
+
+    objKeys = objKeys.sort();//这里写所需要的规则
+
+  
+
+var abs = new BMap.Point(r1[objKeys[1]],r1[objKeys[0]]);
+
+
+
+converted.push(abs);
+
+}
+
+  console.log(converted);
+
+
+ var polygon = new BMap.Polygon(converted,{strokeColor:"blue", strokeWeight:5, strokeOpacity:0.5});
+
+map.addOverlay(polygon);
+  
+map.panTo(poi);
+
+        
+
+
+ 
+    
+}
+
+
+
+/*文本框内容清除*/
+$("#clear_keleyi_com").click(function (){ $("#longitude").val(''); }) 
+
+/*消除地图的覆盖物*/
+function remove_overlay(){
+    map.clearOverlays();         
+  }
+
+
+
+/*页面重新刷新*/
+ // $(".chongxin").on("click",function(){
+ //       window.location.reload();
+ //   })
+
+
+function designs(){
+
+
+
+map.panTo(poi);/*****移动地图到中心的代码******/
+
+}
+
+
+
+
+
+    </script>
+  </body>
+</html>

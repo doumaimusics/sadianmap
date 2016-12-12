@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+	 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+	<title>高德地图</title>
+
+ <style type="text/css">
+      body, html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        font-family: "微软雅黑";
+      }
+
+      #allmap {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      #result {
+        width: 22.2%;
+        font-size: 12px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        border: 1px solid #000;
+      }
+
+      dl,dt,dd,ul,li {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      p {
+        font-size: 12px;
+      }
+
+      dt {
+        font-size: 14px;
+        font-family: "微软雅黑";
+        font-weight: bold;
+        border-bottom: 1px dotted #000;
+        padding: 5px 0 5px 5px;
+        margin: 5px 0;
+      }
+
+      dd {
+        padding: 5px 0 0 5px;
+      }
+
+      li {
+        line-height: 28px;
+        /*  float:left; */
+      }
+
+      .gao {
+        width: 77.6%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+
+      #result .he {
+        position: absolute;
+        left: 50px;
+        top: 15px;
+      }
+
+.place{
+      width: 200px;
+      height: 40px;
+     /*  border:2px solid red;  */
+      position: absolute;
+      right: 100px;
+      bottom: 0px;
+      z-index: 9999;
+}
+.place button{
+  width: 80px;
+  height: 30px;
+
+}
+
+
+
+
+
+    </style>
+
+<!-- **********高德地图**********-->
+<script src="jquery.js"></script>
+      <!--<script src="http://webapi.amap.com/js/marker.js"></script>  
+      <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>-->
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>
+    <script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
+    <script src="http://webapi.amap.com/maps?v=1.3&key=15b1effa6a827c64ee5a2ebc5847b39e&plugin=AMap.MouseTool"></script>
+  
+        <script type="text/javascript" src="http://webapi.amap.com/demos/js/liteToolbar.js"></script>
+
+
+
+
+</head>
+<body>
+	<div id="result">
+      <!--  <input type="button" value="获取绘制的覆盖物个数" onclick="alert(overlays.length)"/>
+   <input type="button" value="清除所有覆盖物" onclick="clearAll()"/>
+    -->
+      <div class="he">
+        <form action="" method="">
+          <ul style="margin-bottom:10px">坐标串（用空格隔开）：</ul>  
+
+          <input type="button" id="clear_keleyi_com" value="清空文本框" /> 
+
+          <input type="button" value="还原地图" id="clearMarker"/>
+
+          <textarea id="longitude" type="text" cols="20" rows="20" id="con" name="con" style="margin-top:10px;"/></textarea>
+          <!--文本区域-->
+        </form>
+        <br>
+        <input type="button" value="绘制点" onclick="theLocation()" style="width:130px;height:38px" id="addMarker"/>
+         <br>
+        <br>       
+        <input type="button" value="绘制线" onclick="coordinates()" style="width:130px;height:38px"/>
+        <br>
+        <br>
+         <input type="button" value="绘制面" onclick="fack()" style="width:130px;height:38px"/>
+        <br>
+        <br>
+        <button onclick="designs()" style="width:130px;height:38px">画图</button>
+        <br>
+        <br>
+        
+      </div>
+    </div>
+    <div class="place">
+
+        <a href="bai.html"><button class="baidu">百度地图</button></a>
+        <a href="gao.html"><button class="gaode">高德地图</button></a>
+
+    </div>
+    <div class="gao">
+      <!-- 设置地图的一个盒子 -->
+     
+      <!-- **********高德地图************ -->
+  <div id="container"></div> 
+<!--   <div  class="button-group">
+  <input type="button" class="button" value="添加点标记覆盖物" id="addMarker"/>
+
+  <input type="button" class="button" value="删除点标记覆盖物" id="clearMarker"/>
+</div> -->
+  </div>
+</body>
+<script>
+	 var marker, map = new AMap.Map("container", {
+        resizeEnable: true,
+        // zoomToAccuracy: true, 
+        center: [116.397428, 39.90923],
+        zoom: 13
+    });
+
+    AMap.plugin(['AMap.ToolBar','AMap.Scale','AMap.OverView'],function(){
+            map.addControl(new AMap.ToolBar());
+            map.addControl(new AMap.Scale());
+            map.addControl(new AMap.OverView({isOpen:true}));
+    })
+
+/*点的代码*/
+
+function theLocation(){
+
+   var pos=document.getElementById("longitude").value;
+     
+     var arr=pos;
+     var url=arr;
+     var new_url=[];
+         strs=url.split(/\s+/);
+     var new_strs = new Array();
+  
+       for (var i = 0; i < strs.length; i+=2) {
+
+         new_strs.push(new  AMap.LngLat(strs[i],strs[i+1]));
+  
+       };
+
+
+   for(var i=0;i<new_strs.length;i++){
+    
+    var marker= new AMap.Marker({
+     map:map,
+     position:new_strs[i]
+      }); 
+   map.panTo(new_strs[i])
+   }
+
+ 
+}
+
+
+
+/*线的模式*/
+function coordinates(){  
+
+
+   var pos=document.getElementById("longitude").value;
+     
+     var arr=pos;
+     var url=arr;
+     var new_url=[];
+         strs=url.split(/\s+/);
+     var new_strs = new Array();
+  
+       for (var i = 0; i < strs.length; i+=2) {
+
+         new_strs.push(new  AMap.LngLat(strs[i],strs[i+1]));
+  
+       };
+    for(var i=0;i<new_strs.length;i++){
+    
+    var marker= new AMap.Marker({
+     map:map,
+     position:new_strs[i]
+      }); 
+   map.panTo(new_strs[i])
+   }
+
+
+    var polyline = new AMap.Polyline({
+        path: new_strs,          //设置线覆盖物路径
+        strokeColor: "#3366FF", //线颜色
+        strokeOpacity: 1,       //线透明度
+        strokeWeight: 5,        //线宽
+        strokeStyle: "solid",   //线样式
+        strokeDasharray: [10, 5] //补充线样式
+    });
+    polyline.setMap(map);
+
+    
+
+}
+
+/*面模式*/
+
+function fack(){
+
+var pos=document.getElementById("longitude").value;
+     
+     var arr=pos;
+     var url=arr;
+     var new_url=[];
+         strs=url.split(/\s+/);
+     var new_strs = new Array();
+  
+       for (var i = 0; i < strs.length; i+=2) {
+
+         new_strs.push(new  AMap.LngLat(strs[i],strs[i+1]));
+  
+       };
+
+         for(var i=0;i<new_strs.length;i++){
+    
+    var marker= new AMap.Marker({
+     map:map,
+     position:new_strs[i]
+      }); 
+   map.panTo(new_strs[i])
+   }
+
+
+    var  polygon = new AMap.Polygon({
+        path: new_strs,//设置多边形边界路径
+        strokeColor: "#FF33FF", //线颜色
+        strokeOpacity: 0.7, //线透明度
+        strokeWeight: 3,    //线宽
+        fillColor: "#1791fc", //填充色
+        fillOpacity: 0.35//填充透明度
+    });
+    polygon.setMap(map);
+
+ 
+}
+
+
+/*文本框内容清除*/
+$("#clear_keleyi_com").click(function (){ $("#longitude").val(''); }) 
+
+/*消除地图的覆盖物*/
+
+/*function remove_overlay(){
+          marker.setMap(null);
+            marker = null;  
+  }*/
+    AMap.event.addDomListener(document.getElementById('clearMarker'), 'click', function() {
+        if (marker) {
+            marker.setMap();
+            /*marker = null;*/
+        }
+    }, false);
+	 
+</script>
+
+</html>
